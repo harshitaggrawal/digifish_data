@@ -16,7 +16,6 @@
 
         .main{
             background:black;
-
             padding:2rem 5%;
         }
         .main .date{
@@ -43,11 +42,7 @@
 <body>
 
 
-<div class="main">
-
-
-
-    
+<div class="main"> 
 @forelse($data['stats'] as $tdate=> $datevalue)
     <div class="date">
         <h1>Date: {{$tdate}}</h1>
@@ -132,12 +127,6 @@
             @endforeach
         @endforeach
     </div>
-
-
-    @empty
-    <p>No data available.</p>
-@endforelse
-
 </div>
 
 

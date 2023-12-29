@@ -19,3 +19,5 @@ Route::get('/', function () {
 
 Route::get('index',[DataController::class,'index']);
 Route::get('selectdata',[DataController::class,'selectdata']);
+Route::get('search',[DataController::class,'search']);
+

@@ -9,9 +9,9 @@ use Illuminate\Support\Facades\DB;
 
 class DataController extends Controller
 {
+   
     public function index()
     {
- 
         try {
            
               $dataSql=integrations::select('country','aggregator','product','operator')->get();
@@ -35,6 +35,8 @@ class DataController extends Controller
         // dd($country, $aggregator,$product,$operator);
         try {
             $dataMongo = DB::connection('mongodb')->collection('all_reports_daily')->get();
+            $dataSql=integrations::select('country','aggregator','product','operator')->get();
+
             // dd($dataMongo[129]);
             // dd(count($dataMongo));
             for($a=0;$a<count($dataMongo);$a++)
@@ -42,16 +44,14 @@ class DataController extends Controller
                 $intData=$dataMongo[$a]['integration_data'];
                 if($intData['country']==$country && $intData['aggregator']==$aggregator && $intData['product']==$product && $intData['operator']==$operator)
                 {
-                   
-                        return view('table',['data'=>$dataMongo[$a]]);
-                        break;
-                    
-                     
-                   
+                //    dump($dataMongo[$a]);
+                    request()->session()->put('data', $dataMongo[$a]['stats']);
+                        return view('index',['data'=>$dataMongo[$a],'sql'=>$dataSql]);
+                        break;                 
                 }        
             }
 
-            return view('notfound');
+            return view('index',['notfound'=>"Data not Found",'sql'=>$dataSql]);
        } 
         
         catch (\Throwable $th) {
@@ -59,7 +59,33 @@ class DataController extends Controller
         }
     }
 
+    function search(Request $request)
+    {
+        $dataSql=integrations::select('country','aggregator','product','operator')->get();
+        $value = session()->get('data');
+      
+        $search=$request->input('searchdate');
+        $from=$request->input('fromdate');
+        $to=$request->input('todate');
+
+        foreach($value as $date => $dvalue)
+        {
+            if($search==$date)
+            {
+                // dd("data found");
+                return view('index',['searchDate'=>$value[$search],'sql'=>$dataSql,'search'=>$search]);
+                break;
+            }
+            elseif ($date>=$from && $date<=$to) {
+                return view('index',['searchDate'=>$value[$date],'sql'=>$dataSql,'search'=>$date]);
+
+            }
+        }
+
+        return view('index',['datenotfound'=>"Data not Found",'sql'=>$dataSql]);
 
 
+
+    }
 
 }
