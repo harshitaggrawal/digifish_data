@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\integrations; 
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 
 class DataController extends Controller
 {
@@ -31,59 +32,94 @@ class DataController extends Controller
         $aggregator=$request->input('aggregator');
         $product=$request->input('product');
         $operator=$request->input('operator');
+        $date=$request->input('date');
+        $carbonDate = Carbon::parse($date);
+        $formattedDate = $carbonDate->toDateString();
+        $date = str_replace("-", "", $formattedDate);
+     
 
-        // dd($country, $aggregator,$product,$operator);
+        
+        $id = integrations::where('country', $country)
+        ->where('aggregator', $aggregator)
+        ->where('product', $product)
+        ->where('operator', $operator)
+        ->pluck('id');
+
         try {
-            $dataMongo = DB::connection('mongodb')->collection('all_reports_daily')->get();
+           
+           $dataMongo = DB::connection('mongodb')->collection('all_reports_daily')->where(['integration_id'=> $id[0]])->get();
+       
             $dataSql=integrations::select('country','aggregator','product','operator')->get();
-
-            // dd($dataMongo[129]);
-            // dd(count($dataMongo));
+            $particular=[];
             for($a=0;$a<count($dataMongo);$a++)
+            {             
+              $particular[$dataMongo[$a]['date']] = $dataMongo[$a]['stats'];
+            }
+           
+
+            foreach($particular as $mainDate => $dateData)
             {
-                $intData=$dataMongo[$a]['integration_data'];
-                if($intData['country']==$country && $intData['aggregator']==$aggregator && $intData['product']==$product && $intData['operator']==$operator)
+                if($mainDate==$date)
                 {
-                //    dump($dataMongo[$a]);
-                    request()->session()->put('data', $dataMongo[$a]['stats']);
-                        return view('index',['data'=>$dataMongo[$a],'sql'=>$dataSql]);
-                        break;                 
-                }        
+                    
+                    ksort($dateData);
+                    
+                    request()->session()->put('data', $dateData); 
+                 return view('index',['data'=>$dateData,'sql'=>$dataSql,'date'=>$date]);
+
+                }
             }
 
+            
             return view('index',['notfound'=>"Data not Found",'sql'=>$dataSql]);
        } 
         
         catch (\Throwable $th) {
-            //throw $th;
+            throw $th;
         }
     }
+
+
+
 
     function search(Request $request)
     {
         $dataSql=integrations::select('country','aggregator','product','operator')->get();
         $value = session()->get('data');
-      
-        $search=$request->input('searchdate');
+  
+
+
         $from=$request->input('fromdate');
+        $carbonDate = Carbon::parse($from);
+        $formattedDate = $carbonDate->toDateString();
+        $from = str_replace("-", "", $formattedDate);
+
         $to=$request->input('todate');
+        $carbonDate = Carbon::parse($to);
+        $formattedDate = $carbonDate->toDateString();
+        $to = str_replace("-", "", $formattedDate);
+
+        $particular=[];
+        
 
         foreach($value as $date => $dvalue)
         {
-            if($search==$date)
-            {
-                // dd("data found");
-                return view('index',['searchDate'=>$value[$search],'sql'=>$dataSql,'search'=>$search]);
-                break;
-            }
-            elseif ($date>=$from && $date<=$to) {
-                return view('index',['searchDate'=>$value[$date],'sql'=>$dataSql,'search'=>$date]);
+            
+            if ($date>=$from && $date<=$to) {
+                
+                $particular[$date] = $dvalue;
 
             }
         }
+        if (empty($particular)) {
+            
+            return view('index',['datenotfound'=>"Data not Found",'sql'=>$dataSql]);
 
-        return view('index',['datenotfound'=>"Data not Found",'sql'=>$dataSql]);
-
+        } else {
+            return view('index',['searchData'=>$particular,'sql'=>$dataSql]);
+           
+        }
+       
 
 
     }

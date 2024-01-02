@@ -45,6 +45,16 @@
 
     }
 
+    form .date {
+        padding: .5rem;
+        width: 250px;
+        border-radius: 8px;
+        background: lightgrey;
+        color: black;
+        border: none;
+        outline: none;
+    }
+
     form button {
         padding: .2rem;
         width: 150px;
@@ -122,6 +132,12 @@
 
     }
 
+    .search label {
+        color: black;
+        padding: .1rem .3rem;
+        font-size: 22px;
+    }
+
     .search button {
         padding: .2rem 2rem;
         width: 150px;
@@ -150,6 +166,7 @@
             <select name="product" id="product" onChange="filterOperator()" style="display:none;"></select>
             <select name="operator" id="operator" onChange="filterOption()" style="display:none;"></select>
         </div>
+        <input type="date" class="date" name="date" id="date" style="display:none;">
         <center> <button type='submit' style="display:none;" id="button">Submit</button></center>
     </form>
 
@@ -159,17 +176,18 @@
 
     <form action="search" class="search ">
         @csrf
-        <input type="text" name="searchdate" placeholder="YYYYMMDD" id="">
-        <input type="text" name="fromdate" placeholder="From: YYYYMMDD" id="">
-        <input type="text" name="todate" placeholder="To :YYYYMMDD" id="">
-
+        <label for="from"> From: </label>
+        <input type="date" name="fromdate" id="">
+        <label for="to"> To: </label>
+        <input type="date" name="todate" id="">
         <button type="submit">search</button>
 
     </form>
 
 
     <div class="main">
-        @foreach($data['stats'] as $tdate=> $datevalue)
+        <h1>{{$date}}</h1>
+        @foreach($data as $tdate=> $datevalue)
         <div class="date">
             <h1>Date: {{$tdate}}</h1>
             <hr>
@@ -274,29 +292,36 @@
 
 
 
-    @if(isset($searchDate))
+    @if(isset($searchData))
 
 
     <form action="search" class="search">
         @csrf
-        <input type="text" name="searchdate" placeholder="YYYYMMDD">
-        <input type="text" name="fromdate" placeholder="From: YYYYMMDD" id="">
-        <input type="text" name="todate" placeholder="To :YYYYMMDD" id="">
-        <button type="submit">Search</button>
+
+        <label for="from"> From: </label>
+        <input type="date" name="fromdate" id="">
+        <label for="to"> To: </label>
+        <input type="date" name="todate" id="">
+        <button type="submit">search</button>
 
     </form>
 
+
     <div class="main">
+
+        @foreach($searchData as $tdate=> $datevalue)
         <div class="date">
-            <h1>Date: {{$search}}</h1>
+            <h1>Date: {{$tdate}}</h1>
+            <hr>
             <div class="allcontent">
-                @foreach($searchDate as $pubId => $pubData)
+
+                @foreach($datevalue as $pubId => $pubData)
                 <div class="content">
                     <div class="id">
                         <p>Publisher Id: {{$pubId}}</p>
                         @foreach($pubData as $subPubId => $subPubData)
                         <p> SubPublisher Id: {{$subPubId}}</p>
-                    </div>  
+                    </div>
                     <table class="table table-light table-hover">
                         <thead>
                             <tr>
@@ -370,23 +395,37 @@
                     @endforeach
                 </div>
                 @endforeach
+
+
             </div>
         </div>
+        @endforeach
     </div>
+
     @endif
+
+
 
 
     @if(isset($datenotfound))
     <form action="search" class="search">
         @csrf
-        <input type="text" name="searchdate" placeholder="YYYYMMDD">
-        <input type="text" name="fromdate" placeholder="From: YYYYMMDD" id="">
-        <input type="text" name="todate" placeholder="To :YYYYMMDD" id="">
-        <button type="submit">Search</button>
+
+        <label for="from"> From: </label>
+        <input type="date" name="fromdate" id="">
+        <label for="to"> To: </label>
+        <input type="date" name="todate" id="">
+        <button type="submit">search</button>
 
     </form>
     <h1 class="notfound">{{$datenotfound}}</h1>
     @endif
+
+
+
+
+
+
 
     <script>
     var Sql = <?php echo json_encode($sql); ?>;
@@ -522,6 +561,8 @@
 
     function filterOption() {
         document.getElementById("button").style.display = 'block';
+        document.getElementById("date").style.display = 'block';
+
 
     }
     </script>

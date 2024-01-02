@@ -14,10 +14,10 @@ use App\Http\Controllers\DataController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('index');
 });
 
-Route::get('index',[DataController::class,'index']);
+Route::get('/',[DataController::class,'index']);
 Route::get('selectdata',[DataController::class,'selectdata']);
 Route::get('search',[DataController::class,'search']);
 
