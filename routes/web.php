@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DataController;
+use App\Http\Controllers\newData;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -16,8 +18,15 @@ use App\Http\Controllers\DataController;
 Route::get('/', function () {
     return view('index');
 });
+Route::get('/view', function () {
+    return view('date');
+});
+
 
 Route::get('/',[DataController::class,'index']);
 Route::get('selectdata',[DataController::class,'selectdata']);
-Route::get('search',[DataController::class,'search']);
+
+
+Route::get('/view',[newData::class,'index']);
+Route::get('showdata',[newData::class,'showdata']);
 
